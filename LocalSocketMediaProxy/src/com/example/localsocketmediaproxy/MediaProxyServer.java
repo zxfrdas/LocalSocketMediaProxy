@@ -24,12 +24,12 @@ public class MediaProxyServer implements Runnable {
 	private AtomicBoolean isStop;
 	private FileChannel fileChannel;
 	private long range;
-	private AtomicBoolean isNeedResponse;
+	private AtomicBoolean isNeedReponse;
 	
 	public MediaProxyServer(int port) {
 		try {
 			isStop = new AtomicBoolean(false);
-			isNeedResponse = new AtomicBoolean(false);
+			isNeedReponse = new AtomicBoolean(false);
 			
 			selector = Selector.open();
 			ServerSocketChannel serverChannel = ServerSocketChannel.open();
@@ -95,7 +95,7 @@ public class MediaProxyServer implements Runnable {
 				String content = readFromClient(key);
 				if (isHttpGetRequest(content)) {
 					range = parseRange(content);
-					isNeedResponse.set(true);
+					isNeedReponse.set(true);
 					key.channel().register(selector, SelectionKey.OP_WRITE);
 				}
 			} // read end
@@ -165,10 +165,10 @@ public class MediaProxyServer implements Runnable {
 	}
 	
 	private void writeHttpResponse(SelectionKey key, long size, long range) throws IOException {
-		if (!isNeedResponse.get()) {
+		if (!isNeedReponse.get()) {
 			return;
 		}
-		isNeedResponse.set(false);
+		isNeedReponse.set(false);
 		StringBuffer sb = new StringBuffer();
 		sb.append("HTTP/1.1 206 Partial Content\r\n");
 		sb.append("Content-Type: video/mp4\r\n");
